@@ -2,6 +2,7 @@ package com.protonest.taskmanagement.service;
 
 import com.protonest.taskmanagement.dto.*;
 import com.protonest.taskmanagement.entity.*;
+import com.protonest.taskmanagement.exception.CustomException;
 import com.protonest.taskmanagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +22,7 @@ public class AuthServiceImpl implements AuthService {
 
         // Check if email already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new CustomException("Email already exists");
         }
 
         User user = User.builder()
