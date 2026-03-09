@@ -5,8 +5,8 @@ import com.protonest.taskmanagement.dto.TaskResponse;
 import com.protonest.taskmanagement.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -21,8 +21,13 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponse> getMyTasks() {
-        return taskService.getMyTasks();
+    public Page<TaskResponse> getMyTasks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        return taskService.getMyTasks(page, size, sortBy, direction);
     }
 
     @PutMapping("/{id}")

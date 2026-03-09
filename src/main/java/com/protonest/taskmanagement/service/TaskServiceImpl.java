@@ -6,11 +6,15 @@ import com.protonest.taskmanagement.entity.User;
 import com.protonest.taskmanagement.repository.TaskRepository;
 import com.protonest.taskmanagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.protonest.taskmanagement.dto.TaskResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +57,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskResponse> getMyTasks() {
+    public Page<TaskResponse> getMyTasks(int page, int size, String sortBy, String direction) {
 
         String email = ((User) SecurityContextHolder
                 .getContext()
@@ -63,10 +67,17 @@ public class TaskServiceImpl implements TaskService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow();
 
-        return taskRepository.findByUserId(user.getId(), null)
-                .getContent()
-                .stream()
-                .map(task -> TaskResponse.builder()
+        Sort sort = direction.equalsIgnoreCase("desc") ?
+                Sort.by(sortBy).descending() :
+                Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Task> taskPage =
+                taskRepository.findByUserId(user.getId(), pageable);
+
+        return taskPage.map(task ->
+                TaskResponse.builder()
                         .id(task.getId())
                         .title(task.getTitle())
                         .description(task.getDescription())
@@ -74,8 +85,8 @@ public class TaskServiceImpl implements TaskService {
                         .priority(task.getPriority())
                         .dueDate(task.getDueDate())
                         .createdAt(task.getCreatedAt())
-                        .build())
-                .toList();
+                        .build()
+        );
     }
 
     @Override
