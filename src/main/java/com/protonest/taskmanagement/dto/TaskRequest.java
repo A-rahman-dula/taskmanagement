@@ -6,13 +6,23 @@ import lombok.*;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
+import jakarta.validation.constraints.*;
+
+@Data
 public class TaskRequest {
 
+    @NotBlank(message = "Title is required")
     private String title;
+
+    @NotBlank(message = "Description is required")
     private String description;
+
+    @NotNull(message = "Status is required")
     private TaskStatus status;
+
+    @NotNull(message = "Priority is required")
     private Priority priority;
+
+    @NotNull(message = "Due date is required")
     private LocalDate dueDate;
 }

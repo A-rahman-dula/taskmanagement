@@ -3,6 +3,7 @@ package com.protonest.taskmanagement.controller;
 import com.protonest.taskmanagement.dto.TaskRequest;
 import com.protonest.taskmanagement.dto.TaskResponse;
 import com.protonest.taskmanagement.service.TaskService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,7 @@ public class TaskController {
     private final TaskService taskService;
 
     @PostMapping
-    public TaskResponse createTask(@RequestBody TaskRequest request) {
+    public TaskResponse createTask(@Valid @RequestBody TaskRequest request) {
         return taskService.createTask(request);
     }
 
