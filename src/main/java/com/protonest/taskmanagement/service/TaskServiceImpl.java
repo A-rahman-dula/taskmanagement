@@ -115,4 +115,26 @@ public class TaskServiceImpl implements TaskService {
                 .createdAt(updatedTask.getCreatedAt())
                 .build();
     }
+
+    @Override
+    public void deleteTask(Long taskId) {
+
+        String email = ((User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal()).getEmail();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow();
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        // Ownership validation
+        if (!task.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("You are not allowed to delete this task");
+        }
+
+        taskRepository.delete(task);
+    }
 }
