@@ -13,6 +13,7 @@ import com.protonest.taskmanagement.dto.TaskResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import com.protonest.taskmanagement.entity.TaskStatus;
 
 
 
@@ -57,15 +58,19 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Page<TaskResponse> getMyTasks(int page, int size, String sortBy, String direction) {
+    public Page<TaskResponse> getMyTasks(
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            TaskStatus status) {
 
         String email = ((User) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal()).getEmail();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow();
+        User user = userRepository.findByEmail(email).orElseThrow();
 
         Sort sort = direction.equalsIgnoreCase("desc") ?
                 Sort.by(sortBy).descending() :
@@ -73,8 +78,13 @@ public class TaskServiceImpl implements TaskService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Task> taskPage =
-                taskRepository.findByUserId(user.getId(), pageable);
+        Page<Task> taskPage;
+
+        if (status != null) {
+            taskPage = taskRepository.findByUserIdAndStatus(user.getId(), status, pageable);
+        } else {
+            taskPage = taskRepository.findByUserId(user.getId(), pageable);
+        }
 
         return taskPage.map(task ->
                 TaskResponse.builder()
@@ -147,5 +157,25 @@ public class TaskServiceImpl implements TaskService {
         }
 
         taskRepository.delete(task);
+    }
+
+    @Override
+    public Page<TaskResponse> getAllTasks(int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Task> taskPage = taskRepository.findAll(pageable);
+
+        return taskPage.map(task ->
+                TaskResponse.builder()
+                        .id(task.getId())
+                        .title(task.getTitle())
+                        .description(task.getDescription())
+                        .status(task.getStatus())
+                        .priority(task.getPriority())
+                        .dueDate(task.getDueDate())
+                        .createdAt(task.getCreatedAt())
+                        .build()
+        );
     }
 }
